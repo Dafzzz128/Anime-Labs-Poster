@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Poster Studio - Minimalist</title>
+    <title>Anime Poster Studio - Pro</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
         
-        :root { --purple: #a855f7; --dark: #050505; }
+        :root { --purple: #a855f7; --dark: #050505; --accent: #d946ef; }
 
         body {
             font-family: 'Montserrat', sans-serif; margin: 0; background: var(--dark); color: white;
@@ -16,14 +16,199 @@
             overflow-x: hidden;
         }
 
-        /* Navigasi Garis 3 */
-        .nav-menu { position: fixed; top: 20px; right: 20px; z-index: 100; cursor: pointer; }
+        /* Navigasi Hamburger - Diperbaiki agar tidak numpuk */
+        .nav-menu { position: fixed; top: 20px; right: 20px; z-index: 1000; cursor: pointer; padding: 10px; }
         .hamburger { width: 30px; height: 3px; background: white; position: relative; transition: 0.3s; }
         .hamburger::before, .hamburger::after { content: ''; position: absolute; width: 30px; height: 3px; background: white; transition: 0.3s; }
         .hamburger::before { top: -8px; }
         .hamburger::after { top: 8px; }
         
+        /* Menu Sidebar dengan Animasi & Glow */
         .menu-content { 
+            position: fixed; top: 0; right: -300px; width: 280px; height: 100vh; 
+            background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px);
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; 
+            padding: 100px 30px; box-shadow: -10px 0 30px rgba(0,0,0,0.8); z-index: 999;
+        }
+        .menu-content.active { right: 0; }
+        
+        .menu-content a { 
+            color: #ccc; text-decoration: none; font-size: 1.1rem; margin-bottom: 25px; 
+            font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 10px;
+            padding: 10px; border-radius: 10px;
+        }
+        
+        /* Animasi khusus untuk link Saweria */
+        .menu-content a.saweria-link {
+            color: #fff; background: linear-gradient(45deg, var(--purple), var(--accent));
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); border: none;
+        }
+        .menu-content a.saweria-link:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--accent); }
+        .menu-content a:not(.saweria-link):hover { color: var(--purple); background: rgba(255,255,255,0.05); }
+
+        /* Background Bubbles Berwarna */
+        .bubbles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+        .bubble { position: absolute; bottom: -100px; border-radius: 50%; animation: float 15s infinite ease-in; opacity: 0.3; filter: blur(4px); }
+        @keyframes float { 0% { transform: translateY(0) scale(1); opacity: 0; } 50% { opacity: 0.4; } 100% { transform: translateY(-120vh) scale(1.8); opacity: 0; } }
+
+        /* UI Header & Search */
+        .header { margin-top: 60px; text-align: center; }
+        .header h2 { font-weight: 900; font-size: 2.5rem; background: linear-gradient(to right, #fff, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .search-section { width: 90%; max-width: 600px; margin: 40px 0; display: flex; gap: 10px; z-index: 10; }
+        input[type="text"] { flex: 1; padding: 15px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none; text-align: center; }
+        .btn-search { padding: 0 30px; border-radius: 30px; border: none; background: white; color: black; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .btn-search:hover { background: var(--purple); color: white; box-shadow: 0 0 20px var(--purple); }
+
+        /* Editor Panel */
+        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; width: 95%; z-index: 10; padding-bottom: 100px; }
+        .editor-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px); padding: 30px; border-radius: 35px; width: 350px; border: 1px solid rgba(255, 255, 255, 0.08); }
+        .field { margin-bottom: 20px; }
+        label { font-size: 10px; color: var(--purple); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 8px; letter-spacing: 1.5px; }
+        input[type="color"] { border: none; width: 45px; height: 45px; cursor: pointer; background: none; border-radius: 50%; }
+        textarea, input:not([type="color"]):not([type="text"]) { width: 100%; background: transparent; border: none; border-bottom: 1px solid #333; color: white; padding: 10px 0; font-family: inherit; font-size: 14px; transition: 0.3s; }
+        textarea:focus, input:focus { outline: none; border-bottom-color: var(--purple); }
+
+        .btn-main { background: var(--purple); color: white; width: 100%; padding: 16px; border-radius: 35px; border: none; font-weight: 900; cursor: pointer; margin-top: 20px; transition: 0.4s; box-shadow: 0 10px 25px rgba(168, 85, 247, 0.4); }
+        .btn-main:hover { transform: translateY(-5px); box-shadow: 0 15px 35px var(--purple); }
+
+        canvas { border-radius: 12px; box-shadow: 0 40px 80px rgba(0,0,0,0.6); max-width: 100%; height: auto; width: 450px; transition: 0.3s; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-menu" onclick="toggleMenu()">
+        <div class="hamburger"></div>
+    </div>
+
+    <div class="menu-content" id="menuContent">
+        <a href="#" onclick="toggleMenu()">🏠 Beranda</a>
+        <a href="https://saweria.co/dafapratamasaweria" target="_blank" class="saweria-link">☕ Dukung di Saweria</a>
+        <a href="#" onclick="toggleMenu()" style="margin-top: auto; border: 1px solid #333; justify-content: center; font-size: 0.9rem;">Tutup Menu</a>
+    </div>
+
+    <div class="bubbles" id="bubbleContainer"></div>
+
+    <div class="header">
+        <h2>STUDIO <span style="color:var(--purple)">ANIME</span></h2>
+        <p style="font-size: 11px; letter-spacing: 2px; color: #888;">PREMIUM POSTER GENERATOR</p>
+    </div>
+
+    <div class="search-section">
+        <input type="text" id="searchInp" placeholder="Tulis judul anime...">
+        <button class="btn-search" onclick="searchAnime()">CARI</button>
+    </div>
+
+    <div class="container">
+        <div class="editor-panel">
+            <div class="field">
+                <label>Warna Background Poster</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <input type="color" id="canvasColor" value="#E9E9E9">
+                    <span style="font-size: 12px; font-weight: bold;" id="hexText">#E9E9E9</span>
+                </div>
+            </div>
+
+            <div class="field"><label>Judul</label><textarea id="titleInp" rows="2">MASHLE</textarea></div>
+            <div class="field"><label>Tahun</label><input type="text" id="yearInp" value="2024"></div>
+            <div class="field"><label>Genre</label><input type="text" id="genreInp" value="Action, Comedy"></div>
+            <div class="field"><label>Produced By</label><input type="text" id="prodInp" value="Aniplex"></div>
+            <div class="field"><label>Directed By</label><input type="text" id="dirInp" value="Tomoya Tanaka"></div>
+            <div class="field"><label>Studios</label><input type="text" id="studioInp" value="A-1 Pictures"></div>
+            <div class="field"><label>Starring</label><textarea id="starInp" rows="4">Chiaki Kobayashi</textarea></div>
+            
+            <button class="btn-main" onclick="downloadImage()">💾 SIMPAN POSTER PNG</button>
+        </div>
+
+        <div class="preview-area">
+            <canvas id="posterCanvas" width="1000"></canvas>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('menuContent').classList.toggle('active');
+            const ham = document.querySelector('.hamburger');
+            if(document.getElementById('menuContent').classList.contains('active')) {
+                ham.style.background = 'transparent';
+                ham.style.setProperty('--before-rotate', '45deg');
+            } else {
+                ham.style.background = 'white';
+            }
+        }
+
+        // Partikel Gelembung Berwarna
+        const bc = document.getElementById('bubbleContainer');
+        const colors = ['#a855f7', '#d946ef', '#6366f1', '#4f46e5'];
+        for(let i=0; i<20; i++) {
+            let b = document.createElement('div'); b.className='bubble';
+            let s = Math.random()*70 + 30 + 'px'; b.style.width=s; b.style.height=s;
+            b.style.left = Math.random()*100 + '%'; b.style.animationDelay = Math.random()*15+'s';
+            b.style.background = colors[Math.floor(Math.random()*colors.length)];
+            bc.appendChild(b);
+        }
+
+        const canvas = document.getElementById('posterCanvas');
+        const ctx = canvas.getContext('2d');
+        let userImg = new Image(); userImg.crossOrigin = "anonymous";
+
+        async function searchAnime() {
+            const q = document.getElementById('searchInp').value;
+            if(!q) return;
+            const res = await fetch(`https://api.jikan.moe/v4/anime?q=${q}&limit=1`);
+            const json = await res.json();
+            if(json.data[0]) {
+                const a = json.data[0];
+                document.getElementById('titleInp').value = a.title;
+                document.getElementById('yearInp').value = a.year || a.aired.prop.from.year || "";
+                document.getElementById('genreInp').value = a.genres.map(g=>g.name).join(', ');
+                document.getElementById('studioInp').value = a.studios.map(s=>s.name).join(', ');
+                
+                const charRes = await fetch(`https://api.jikan.moe/v4/anime/${a.mal_id}/characters`);
+                const charJson = await charRes.json();
+                document.getElementById('starInp').value = charJson.data.slice(0, 10).map(c => c.character.name).join(', ');
+
+                userImg.src = a.images.jpg.large_image_url;
+                userImg.onload = draw;
+            }
+        }
+
+        function wrapText(text, x, y, maxWidth, lineHeight, font, isDrawing) {
+            ctx.font = font;
+            const words = text.split(' ');
+            let line = ''; let currentY = y;
+            for (let n = 0; n < words.length; n++) {
+                let test = line + words[n] + ' ';
+                if (ctx.measureText(test).width > maxWidth && n > 0) {
+                    if (isDrawing) ctx.fillText(line, x, currentY);
+                    line = words[n] + ' '; currentY += lineHeight;
+                } else { line = test; }
+            }
+            if (isDrawing) ctx.fillText(line, x, currentY);
+            return currentY + lineHeight;
+        }
+
+        function draw() {
+            let mY = 980;
+            mY = wrapText(document.getElementById('titleInp').value.toUpperCase(), 60, mY, 880, 95, "900 85px Montserrat", false);
+            mY += 150; 
+            mY = wrapText(document.getElementById('starInp').value.toUpperCase(), 220, mY, 730, 35, "bold 20px Montserrat", false);
+            canvas.height = mY + 120;
+
+            const bgColor = document.getElementById('canvasColor').value;
+            document.getElementById('hexText').innerText = bgColor.toUpperCase();
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if(userImg.src) ctx.drawImage(userImg, 60, 60, 880, 850);
+
+            ctx.fillStyle = "black";
+            let dY = wrapText(document.getElementById('titleInp').value.toUpperCase(), 60, 980, 880, 95, "900 85px Montserrat", true);
+            ctx.font = "400 35px Montserrat"; ctx.fillText(document.getElementById('yearInp').value, 60, dY);
+            dY += 80;
+
+            const meta = [
+                {l:
             position: fixed; top: 0; right: -250px; width: 250px; height: 100vh; 
             background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px);
             transition: 0.5s; display: flex; flex-direction: column; padding: 80px 20px; box-shadow: -5px 0 20px rgba(0,0,0,0.5);
