@@ -3,121 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anime Poster Studio - Pro</title>
+    <title>Anime Poster Generator</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
         
-        :root { --purple: #a855f7; --dark: #050505; --accent: #d946ef; }
+        :root {
+            --primary-purple: #8A2BE2; /* Biru Ungu */
+            --dark-blue: #0A0A2A;
+            --gradient-start: #3f0071;
+            --gradient-end: #000000;
+        }
 
         body {
-            font-family: 'Montserrat', sans-serif; margin: 0; background: var(--dark); color: white;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-            background: radial-gradient(circle at center, #1e1b4b 0%, #050505 100%);
-            overflow-x: hidden;
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Mencegah scroll horizontal dari animasi */
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--gradient-start);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            position: relative;
+            z-index: 1; /* Pastikan konten di atas animasi */
         }
 
-        /* Navigasi Hamburger - Diperbaiki agar tidak numpuk */
-        .nav-menu { position: fixed; top: 20px; right: 20px; z-index: 1000; cursor: pointer; padding: 10px; }
-        .hamburger { width: 30px; height: 3px; background: white; position: relative; transition: 0.3s; }
-        .hamburger::before, .hamburger::after { content: ''; position: absolute; width: 30px; height: 3px; background: white; transition: 0.3s; }
-        .hamburger::before { top: -8px; }
-        .hamburger::after { top: 8px; }
-        
-        /* Menu Sidebar dengan Animasi & Glow */
-        .menu-content { 
-            position: fixed; top: 0; right: -300px; width: 280px; height: 100vh; 
-            background: rgba(10, 10, 10, 0.98); backdrop-filter: blur(20px);
-            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; 
-            padding: 100px 30px; box-shadow: -10px 0 30px rgba(0,0,0,0.8); z-index: 999;
+        /* --- Animasi Gelombang Warna-warni --- */
+        .waves {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            filter: blur(20px) contrast(150%); /* Efek blur dan kontras untuk gelombang */
         }
-        .menu-content.active { right: 0; }
-        
-        .menu-content a { 
-            color: #ccc; text-decoration: none; font-size: 1.1rem; margin-bottom: 25px; 
-            font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 10px;
-            padding: 10px; border-radius: 10px;
+
+        .wave {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(var(--primary-purple), 0.5); /* Warna dasar ungu */
+            animation: wave-motion 20s infinite linear;
+            opacity: 0.7;
+            transform: translate(-50%, -50%);
         }
-        
-        /* Animasi khusus untuk link Saweria */
-        .menu-content a.saweria-link {
-            color: #fff; background: linear-gradient(45deg, var(--purple), var(--accent));
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); border: none;
+
+        .wave:nth-child(1) { width: 500px; height: 500px; top: 10%; left: 20%; animation-duration: 18s; background: rgba(255, 0, 150, 0.4); } /* Merah muda */
+        .wave:nth-child(2) { width: 700px; height: 700px; top: 60%; left: 80%; animation-duration: 25s; background: rgba(0, 200, 255, 0.4); } /* Biru muda */
+        .wave:nth-child(3) { width: 600px; height: 600px; top: 30%; left: 50%; animation-duration: 22s; background: rgba(150, 255, 0, 0.4); } /* Hijau terang */
+        .wave:nth-child(4) { width: 800px; height: 800px; top: 80%; left: 30%; animation-duration: 28s; background: rgba(255, 100, 0, 0.4); } /* Oranye */
+        .wave:nth-child(5) { width: 400px; height: 400px; top: 50%; left: 10%; animation-duration: 20s; background: rgba(200, 0, 255, 0.4); } /* Ungu terang */
+
+
+        @keyframes wave-motion {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.7; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.4; }
+            100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.7; }
         }
-        .menu-content a.saweria-link:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--accent); }
-        .menu-content a:not(.saweria-link):hover { color: var(--purple); background: rgba(255,255,255,0.05); }
+        /* --- Akhir Animasi Gelombang --- */
 
-        /* Background Bubbles Berwarna */
-        .bubbles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-        .bubble { position: absolute; bottom: -100px; border-radius: 50%; animation: float 15s infinite ease-in; opacity: 0.3; filter: blur(4px); }
-        @keyframes float { 0% { transform: translateY(0) scale(1); opacity: 0; } 50% { opacity: 0.4; } 100% { transform: translateY(-120vh) scale(1.8); opacity: 0; } }
+        /* --- Konten utama --- */
+        h1 { font-weight: 900; margin-top: 40px; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative; z-index: 1;}
+        p { margin-bottom: 30px; opacity: 0.8; position: relative; z-index: 1;}
 
-        /* UI Header & Search */
-        .header { margin-top: 60px; text-align: center; }
-        .header h2 { font-weight: 900; font-size: 2.5rem; background: linear-gradient(to right, #fff, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .search-section { width: 90%; max-width: 600px; margin: 40px 0; display: flex; gap: 10px; z-index: 10; }
-        input[type="text"] { flex: 1; padding: 15px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none; text-align: center; }
-        .btn-search { padding: 0 30px; border-radius: 30px; border: none; background: white; color: black; font-weight: 900; cursor: pointer; transition: 0.3s; }
-        .btn-search:hover { background: var(--purple); color: white; box-shadow: 0 0 20px var(--purple); }
+        .search-section { width: 100%; max-width: 900px; display: flex; gap: 10px; margin-bottom: 35px; position: relative; z-index: 1;}
+        input[type="text"] { flex: 1; padding: 15px; border-radius: 12px; border: none; outline: none; font-size: 16px; background: rgba(255,255,255,0.1); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        input[type="text"]::placeholder { color: rgba(255,255,255,0.6); }
 
-        /* Editor Panel */
-        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; width: 95%; z-index: 10; padding-bottom: 100px; }
-        .editor-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px); padding: 30px; border-radius: 35px; width: 350px; border: 1px solid rgba(255, 255, 255, 0.08); }
-        .field { margin-bottom: 20px; }
-        label { font-size: 10px; color: var(--purple); font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 8px; letter-spacing: 1.5px; }
-        input[type="color"] { border: none; width: 45px; height: 45px; cursor: pointer; background: none; border-radius: 50%; }
-        textarea, input:not([type="color"]):not([type="text"]) { width: 100%; background: transparent; border: none; border-bottom: 1px solid #333; color: white; padding: 10px 0; font-family: inherit; font-size: 14px; transition: 0.3s; }
-        textarea:focus, input:focus { outline: none; border-bottom-color: var(--purple); }
+        .btn { padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; }
+        .btn-search { background: var(--primary-purple); }
+        .btn-download { background: #000; width: 100%; margin-top: 15px; font-size: 16px; }
 
-        .btn-main { background: var(--purple); color: white; width: 100%; padding: 16px; border-radius: 35px; border: none; font-weight: 900; cursor: pointer; margin-top: 20px; transition: 0.4s; box-shadow: 0 10px 25px rgba(168, 85, 247, 0.4); }
-        .btn-main:hover { transform: translateY(-5px); box-shadow: 0 15px 35px var(--purple); }
+        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 1200px; position: relative; z-index: 1;}
+        .editor-panel { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); height: fit-content; border: 1px solid rgba(255,255,255,0.1); }
+        .field { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; font-weight: bold; color: rgba(255,255,255,0.7); text-transform: uppercase; margin-bottom: 4px; }
+        textarea, input { width: 100%; padding: 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px; background: rgba(0,0,0,0.2); color: white; }
+        textarea:focus, input:focus { border-color: var(--primary-purple); background: rgba(0,0,0,0.3); }
 
-        canvas { border-radius: 12px; box-shadow: 0 40px 80px rgba(0,0,0,0.6); max-width: 100%; height: auto; width: 450px; transition: 0.3s; }
+        canvas { background: #E9E9E9; border-radius: 4px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); max-width: 100%; height: auto; width: 450px; }
     </style>
 </head>
 <body>
 
-    <div class="nav-menu" onclick="toggleMenu()">
-        <div class="hamburger"></div>
+    <div class="waves">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
     </div>
 
-    <div class="menu-content" id="menuContent">
-        <a href="#" onclick="toggleMenu()">🏠 Beranda</a>
-        <a href="https://saweria.co/dafapratamasaweria" target="_blank" class="saweria-link">☕ Dukung di Saweria</a>
-        <a href="#" onclick="toggleMenu()" style="margin-top: auto; border: 1px solid #333; justify-content: center; font-size: 0.9rem;">Tutup Menu</a>
-    </div>
-
-    <div class="bubbles" id="bubbleContainer"></div>
-
-    <div class="header">
-        <h2>STUDIO <span style="color:var(--purple)">ANIME</span></h2>
-        <p style="font-size: 11px; letter-spacing: 2px; color: #888;">PREMIUM POSTER GENERATOR</p>
-    </div>
+    <h1>✨ ANIME POSTER GENERATOR ✨</h1>
+    <p>Cari anime favoritmu dan buat poster epik secara instan!</p>
 
     <div class="search-section">
-        <input type="text" id="searchInp" placeholder="Tulis judul anime...">
-        <button class="btn-search" onclick="searchAnime()">CARI</button>
+        <input type="text" id="searchInp" placeholder="Cari anime... (Contoh: Spy x Family)">
+        <button class="btn btn-search" onclick="searchAnime()">CARI ANIME</button>
     </div>
 
     <div class="container">
         <div class="editor-panel">
-            <div class="field">
-                <label>Warna Background Poster</label>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <input type="color" id="canvasColor" value="#E9E9E9">
-                    <span style="font-size: 12px; font-weight: bold;" id="hexText">#E9E9E9</span>
-                </div>
-            </div>
-
-            <div class="field"><label>Judul</label><textarea id="titleInp" rows="2">MASHLE</textarea></div>
-            <div class="field"><label>Tahun</label><input type="text" id="yearInp" value="2024"></div>
-            <div class="field"><label>Genre</label><input type="text" id="genreInp" value="Action, Comedy"></div>
-            <div class="field"><label>Produced By</label><input type="text" id="prodInp" value="Aniplex"></div>
-            <div class="field"><label>Directed By</label><input type="text" id="dirInp" value="Tomoya Tanaka"></div>
-            <div class="field"><label>Studios</label><input type="text" id="studioInp" value="A-1 Pictures"></div>
-            <div class="field"><label>Starring</label><textarea id="starInp" rows="4">Chiaki Kobayashi</textarea></div>
-            
-            <button class="btn-main" onclick="downloadImage()">💾 SIMPAN POSTER PNG</button>
+            <div class="field"><label>Judul Utama</label><textarea id="titleInp" rows="2">ANIME TITLE</textarea></div>
+            <div class="field"><label>Tahun Rilis</label><input type="text" id="yearInp" value="2024"></div>
+            <div class="field"><label>Genre</label><input type="text" id="genreInp" value="Action, Adventure"></div>
+            <div class="field"><label>Produced By</label><input type="text" id="prodByInp" value="Producer Name"></div>
+            <div class="field"><label>Directed By</label><input type="text" id="dirInp" value="Director Name"></div>
+            <div class="field"><label>Studios</label><input type="text" id="studioInp" value="Studio Name"></div>
+            <div class="field"><label>Starring</label><textarea id="starInp" rows="3">Main Voice Cast</textarea></div>
+            <button class="btn btn-download" onclick="download()">UNDUH POSTER PNG</button>
         </div>
 
         <div class="preview-area">
@@ -126,62 +123,62 @@
     </div>
 
     <script>
-        function toggleMenu() {
-            document.getElementById('menuContent').classList.toggle('active');
-            const ham = document.querySelector('.hamburger');
-            if(document.getElementById('menuContent').classList.contains('active')) {
-                ham.style.background = 'transparent';
-                ham.style.setProperty('--before-rotate', '45deg');
-            } else {
-                ham.style.background = 'white';
-            }
-        }
-
-        // Partikel Gelembung Berwarna
-        const bc = document.getElementById('bubbleContainer');
-        const colors = ['#a855f7', '#d946ef', '#6366f1', '#4f46e5'];
-        for(let i=0; i<20; i++) {
-            let b = document.createElement('div'); b.className='bubble';
-            let s = Math.random()*70 + 30 + 'px'; b.style.width=s; b.style.height=s;
-            b.style.left = Math.random()*100 + '%'; b.style.animationDelay = Math.random()*15+'s';
-            b.style.background = colors[Math.floor(Math.random()*colors.length)];
-            bc.appendChild(b);
-        }
-
         const canvas = document.getElementById('posterCanvas');
         const ctx = canvas.getContext('2d');
-        let userImg = new Image(); userImg.crossOrigin = "anonymous";
+        let userImg = new Image();
+        userImg.crossOrigin = "anonymous";
 
         async function searchAnime() {
             const q = document.getElementById('searchInp').value;
             if(!q) return;
-            const res = await fetch(`https://api.jikan.moe/v4/anime?q=${q}&limit=1`);
-            const json = await res.json();
-            if(json.data[0]) {
-                const a = json.data[0];
-                document.getElementById('titleInp').value = a.title;
-                document.getElementById('yearInp').value = a.year || a.aired.prop.from.year || "";
-                document.getElementById('genreInp').value = a.genres.map(g=>g.name).join(', ');
-                document.getElementById('studioInp').value = a.studios.map(s=>s.name).join(', ');
-                
-                const charRes = await fetch(`https://api.jikan.moe/v4/anime/${a.mal_id}/characters`);
-                const charJson = await charRes.json();
-                document.getElementById('starInp').value = charJson.data.slice(0, 10).map(c => c.character.name).join(', ');
+            const btn = document.querySelector('.btn-search');
+            btn.innerText = "Mencari...";
+            
+            try {
+                const res = await fetch(`https://api.jikan.moe/v4/anime?q=${q}&limit=1`);
+                const json = await res.json();
+                if(json.data[0]) {
+                    const a = json.data[0];
+                    document.getElementById('titleInp').value = a.title;
+                    document.getElementById('yearInp').value = a.year || a.aired.prop.from.year || "";
+                    document.getElementById('genreInp').value = a.genres.map(g=>g.name).join(', ');
+                    document.getElementById('prodByInp').value = a.producers.slice(0,2).map(p=>p.name).join(', ') || "-";
+                    document.getElementById('studioInp').value = a.studios.map(s=>s.name).join(', ');
+                    
+                    // Fetch Director
+                    const staffRes = await fetch(`https://api.jikan.moe/v4/anime/${a.mal_id}/staff`);
+                    const staffJson = await staffRes.json();
+                    const director = staffJson.data.find(s => s.positions.includes("Director"));
+                    document.getElementById('dirInp').value = director ? director.person.name : "-";
 
-                userImg.src = a.images.jpg.large_image_url;
-                userImg.onload = draw;
+                    // Fetch Characters for Starring
+                    const charRes = await fetch(`https://api.jikan.moe/v4/anime/${a.mal_id}/characters`);
+                    const charJson = await charRes.json();
+                    document.getElementById('starInp').value = charJson.data.slice(0, 5).map(c => c.character.name).join(', ');
+
+                    userImg.src = a.images.jpg.large_image_url;
+                    userImg.onload = draw;
+                } else {
+                    alert("Anime tidak ditemukan. Coba nama lain!");
+                }
+            } catch(e) { 
+                console.error("Error fetching anime data:", e);
+                alert("Gagal mengambil data. Pastikan nama anime benar atau coba lagi nanti.");
             }
+            btn.innerText = "CARI ANIME";
         }
 
-        function wrapText(text, x, y, maxWidth, lineHeight, font, isDrawing) {
+        function helperDrawText(text, x, y, maxWidth, lineHeight, font, isDrawing) {
             ctx.font = font;
             const words = text.split(' ');
-            let line = ''; let currentY = y;
+            let line = '';
+            let currentY = y;
             for (let n = 0; n < words.length; n++) {
                 let test = line + words[n] + ' ';
                 if (ctx.measureText(test).width > maxWidth && n > 0) {
                     if (isDrawing) ctx.fillText(line, x, currentY);
-                    line = words[n] + ' '; currentY += lineHeight;
+                    line = words[n] + ' ';
+                    currentY += lineHeight;
                 } else { line = test; }
             }
             if (isDrawing) ctx.fillText(line, x, currentY);
@@ -189,23 +186,68 @@
         }
 
         function draw() {
-            let mY = 980;
-            mY = wrapText(document.getElementById('titleInp').value.toUpperCase(), 60, mY, 880, 95, "900 85px Montserrat", false);
-            mY += 150; 
-            mY = wrapText(document.getElementById('starInp').value.toUpperCase(), 220, mY, 730, 35, "bold 20px Montserrat", false);
-            canvas.height = mY + 120;
+            const margin = 60;
+            const maxWidth = 880;
 
-            const bgColor = document.getElementById('canvasColor').value;
-            document.getElementById('hexText').innerText = bgColor.toUpperCase();
-            ctx.fillStyle = bgColor;
+            // --- TAHAP 1: HITUNG TINGGI TOTAL ---
+            let measureY = 980; // Titik mulai setelah gambar
+            measureY = helperDrawText(document.getElementById('titleInp').value.toUpperCase(), margin, measureY, maxWidth, 95, "900 85px 'Montserrat'", false);
+            measureY += 60; // Space Tahun
+            
+            // Hitung space Metadata
+            measureY = helperDrawText(document.getElementById('genreInp').value.toUpperCase(), 220, measureY, 700, 38, "bold 22px 'Montserrat'", false);
+            measureY = helperDrawText(document.getElementById('prodByInp').value.toUpperCase(), 220, measureY, 700, 38, "bold 22px 'Montserrat'", false);
+            measureY = helperDrawText(document.getElementById('dirInp').value.toUpperCase(), 220, measureY, 700, 38, "bold 22px 'Montserrat'", false);
+            measureY = helperDrawText(document.getElementById('studioInp').value.toUpperCase(), 220, measureY, 700, 38, "bold 22px 'Montserrat'", false);
+            measureY = helperDrawText(document.getElementById('starInp').value.toUpperCase(), 220, measureY, 700, 38, "bold 22px 'Montserrat'", false);
+            
+            // Set Tinggi Canvas sesuai hitungan
+            canvas.height = measureY + 120; // Tambah padding bawah
+
+            // --- TAHAP 2: GAMBAR ULANG ---
+            ctx.fillStyle = "#E9E9E9"; // Warna broken white canvas
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            if(userImg.src) ctx.drawImage(userImg, 60, 60, 880, 850);
+            if(userImg.src) ctx.drawImage(userImg, margin, 60, 880, 850);
 
             ctx.fillStyle = "black";
-            let dY = wrapText(document.getElementById('titleInp').value.toUpperCase(), 60, 980, 880, 95, "900 85px Montserrat", true);
-            ctx.font = "400 35px Montserrat"; ctx.fillText(document.getElementById('yearInp').value, 60, dY);
-            dY += 80;
+            let drawY = 980;
 
-            const meta = [
-                {l:
+            // Gambar Judul
+            drawY = helperDrawText(document.getElementById('titleInp').value.toUpperCase(), margin, drawY, maxWidth, 95, "900 85px 'Montserrat'", true);
+
+            // Gambar Tahun
+            ctx.font = "400 35px 'Montserrat'"; // Sedikit tebal dari 300
+            ctx.fillText(document.getElementById('yearInp').value, margin, drawY);
+            drawY += 100;
+
+            // Gambar Metadata
+            const metadata = [
+                {l: "genre:", v: document.getElementById('genreInp').value},
+                {l: "produced by:", v: document.getElementById('prodByInp').value},
+                {l: "directed by:", v: document.getElementById('dirInp').value},
+                {l: "studios:", v: document.getElementById('studioInp').value},
+                {l: "starring:", v: document.getElementById('starInp').value}
+            ];
+
+            metadata.forEach(item => {
+                ctx.fillStyle = "#666"; ctx.font = "20px 'Montserrat'";
+                ctx.fillText(item.l, margin, drawY);
+                ctx.fillStyle = "black";
+                drawY = helperDrawText(item.v.toUpperCase(), 220, drawY, 700, 38, "bold 20px 'Montserrat'", true) + 8;
+            });
+
+            // Tidak ada sinopsis lagi di sini.
+        }
+
+        document.querySelectorAll('input, textarea').forEach(el => el.oninput = draw);
+        function download() {
+            const link = document.createElement('a');
+            link.download = 'anime-poster.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        window.onload = draw;
+    </script>
+</body>
+</html>
