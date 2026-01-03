@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Poster Studio - Final Neon</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+        
+        :root { --purple: #a855f7; --dark: #09090b; }
+
+        body {
+            font-family: 'Montserrat', sans-serif; margin: 0; background: var(--dark); color: white;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            background: linear-gradient(-45deg, #09090b, #1e1b4b, #000000); background-size: 400% 400%; animation: gradientBG 15s ease infinite;
+        }
+
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* Gelembung Warna-warni */
+        .bubbles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+        .bubble { position: absolute; bottom: -100px; border-radius: 50%; animation: float 15s infinite ease-in; opacity: 0.3; }
+        @keyframes float { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-120vh) scale(1.5); } }
+
+        .search-section { width: 90%; max-width: 800px; margin: 40px 0; display: flex; gap: 10px; z-index: 10; }
+        input[type="text"] { flex: 1; padding: 15px; border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.4); background: rgba(255,255,255,0.05); color: white; outline: none; }
+        .btn { padding: 12px 25px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-search { background: var(--purple); color: white; box-shadow: 0 0 15px var(--purple); }
+
+        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; width: 95%; z-index: 10; padding-bottom: 100px; }
+        
+        /* Glassmorphism Panel */
+        .editor-panel { 
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); 
+            padding: 30px; border-radius: 30px; width: 380px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .field { margin-bottom: 15px; }
+        label { font-size: 11px; color: var(--purple); font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 6px; }
+        
+        /* Custom Color Picker */
+        .color-picker-box { 
+            display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.4); 
+            padding: 10px; border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        input[type="color"] { border: none; width: 50px; height: 50px; cursor: pointer; background: none; }
+        .color-hex { font-family: monospace; font-weight: bold; color: var(--purple); }
+
+        textarea, input:not([type="color"]):not([type="text"]) { 
+            width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); 
+            color: white; padding: 12px; border-radius: 10px; font-family: inherit;
+        }
+
+        .download-box { margin-top: 20px; }
+        .btn-main { background: white; color: black; width: 100%; margin-bottom: 10px; }
+        .btn-canva { background: transparent; color: white; border: 1px solid var(--purple); width: 100%; }
+
+        canvas { border-radius: 10px; box-shadow: 0 50px 100px rgba(0,0,0,0.8); max-width: 100%; height: auto; width: 450px; }
+    </style>
+</head>
+<body>
+
+    <div class="bubbles" id="bubbleContainer"></div>
+
+    <h2 style="margin-top:50px; font-weight:900; font-size: 2.5rem; background: linear-gradient(to right, #a855f7, #d946ef); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ANIME STUDIO</h2>
+
+    <div class="search-section">
+        <input type="text" id="searchInp" placeholder="Cari anime untuk auto-fill...">
+        <button class="btn btn-search" onclick="searchAnime()">CARI</button>
+    </div>
+
+    <div class="container">
+        <div class="editor-panel">
+            <div class="field">
+                <label>Warna Background Poster</label>
+                <div class="color-picker-box">
+                    <input type="color" id="canvasColor" value="#E9E9E9">
+                    <span class="color-hex" id="hexText">#E9E9E9</span>
+                </div>
+            </div>
+
+            <div class="field"><label>Judul (Tebal)</label><textarea id="titleInp" rows="2">MASHLE</textarea></div>
+            <div class="field"><label>Tahun</label><input type="text" id="yearInp" value="2024"></div>
+            <div class="field"><label>Genre</label><input type="text" id="genreInp" value="Action"></div>
+            <div class="field"><label>Produced By</label><input type="text" id="prodInp" value="Producer"></div>
+            <div class="field"><label>Directed By</label><input type="text" id="dirInp" value="Director"></div>
+            <div class="field"><label>Studios</label><input type="text" id="studioInp" value="Studio"></div>
+            <div class="field"><label>Starring (Lengkap)</label><textarea id="starInp" rows="5">Cast Names</textarea></div>
+            
+            <div class="download-box">
+                <button class="btn btn-main" onclick="downloadImage()">💾 SIMPAN PNG</button>
+                <button class="btn btn-canva" onclick="downloadPDF()">🎨 PDF UNTUK CANVA</button>
+            </div>
+        </div>
+
+        <div class="preview-area">
+            <canvas id="posterCanvas" width="1000"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Setup Gelembung
+        const bc = document.getElementById('bubbleContainer');
+        const colors = ['#a855f7', '#d946ef', '#60a5fa', '#f472b6'];
+        for(let i=0; i<20; i++) {
+            let b = document.createElement('div'); b.className='bubble';
+            let s = Math.random()*60 + 20 + 'px'; b.style.width=s; b.style.height=s;
+            b.style.left = Math.random()*100 + '%'; b.style.animationDelay = Math.random()*15+'s';
+            b.style.background = colors[Math.floor(Math.random()*colors.length)];
+            bc.appendChild(b);
+        }
+
+        const canvas = document.getElementById('posterCanvas');
+        const ctx = canvas.getContext('2d');
+        let userImg = new Image(); userImg.crossOrigin = "anonymous";
+
+        async function searchAnime() {
+            const q = document.getElementById('searchInp').value;
+            if(!q) return;
+            const res = await fetch(`https://api.jikan.moe/v4/anime?q=${q}&limit=1`);
+            const json = await res.json();
+            if(json.data[0]) {
+                const a = json.data[0];
+                document.getElementById('titleInp').value = a.title;
+                document.getElementById('yearInp').value = a.year || a.aired.prop.from.year || "";
+                document.getElementById('genreInp').value = a.genres.map(g=>g.name).join(', ');
+                document.getElementById('studioInp').value = a.studios.map(s=>s.name).join(', ');
+                
+                const charRes = await fetch(`https://api.jikan.moe/v4/anime/${a.mal_id}/characters`);
+                const charJson = await charRes.json();
+                document.getElementById('starInp').value = charJson.data.map(c => c.character.name).join(', ');
+
+                userImg.src = a.images.jpg.large_image_url;
+                userImg.onload = draw;
+            }
+        }
+
+        function wrapText(text, x, y, maxWidth, lineHeight, font, isDrawing) {
+            ctx.font = font;
+            const words = text.split(' ');
+            let line = ''; let currentY = y;
+            for (let n = 0; n < words.length; n++) {
+                let test = line + words[n] + ' ';
+                if (ctx.measureText(test).width > maxWidth && n > 0) {
+                    if (isDrawing) ctx.fillText(line, x, currentY);
+                    line = words[n] + ' '; currentY += lineHeight;
+                } else { line = test; }
+            }
+            if (isDrawing) ctx.fillText(line, x, currentY);
+            return currentY + lineHeight;
+        }
+
+        function draw() {
+            // Prediksi Tinggi
+            let mY = 980;
+            mY = wrapText(document.getElementById('titleInp').value.toUpperCase(), 60, mY, 880, 95, "900 85px Montserrat", false);
+            mY += 150; 
+            mY = wrapText(document.getElementById('starInp').value.toUpperCase(), 220, mY, 730, 35, "bold 20px Montserrat", false);
+            canvas.height = mY + 150;
+
+            // Custom Background
+            const bgColor = document.getElementById('canvasColor').value;
+            document.getElementById('hexText').innerText = bgColor.toUpperCase();
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if(userImg.src) ctx.drawImage(userImg, 60, 60, 880, 850);
+
+            // Text Rendering
+            ctx.fillStyle = "black";
+            let dY = wrapText(document.getElementById('titleInp').value.toUpperCase(), 60, 980, 880, 95, "900 85px Montserrat", true);
+            ctx.font = "400 35px Montserrat"; ctx.fillText(document.getElementById('yearInp').value, 60, dY);
+            dY += 80;
+
+            const meta = [
+                {l: "genre:", v: document.getElementById('genreInp').value},
+                {l: "produced by:", v: document.getElementById('prodInp').value},
+                {l: "directed by:", v: document.getElementById('dirInp').value},
+                {l: "studios:", v: document.getElementById('studioInp').value},
+                {l: "starring:", v: document.getElementById('starInp').value}
+            ];
+
+            meta.forEach(item => {
+                ctx.fillStyle = "#666"; ctx.font = "20px Montserrat";
+                ctx.fillText(item.l, 60, dY);
+                ctx.fillStyle = "black";
+                dY = wrapText(item.v.toUpperCase(), 220, dY, 730, 35, "bold 20px Montserrat", true) + 12;
+            });
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'poster-anime.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'p', unit: 'px', format: [canvas.width, canvas.height] });
+            pdf.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, canvas.width, canvas.height);
+            pdf.save("Poster-Edit-Canva.pdf");
+        }
+
+        document.querySelectorAll('input, textarea, #canvasColor').forEach(el => el.oninput = draw);
+        window.onload = draw;
+    </script>
+</body>
+</html>
